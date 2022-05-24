@@ -33,9 +33,9 @@ field = ['ip_str', 'org', 'os', 'device', 'devicetype', 'product','asn',
 ## Deploy to Azure
 Use the following buttons to deploy the Azure resources:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)]
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw%2Egithubusercontent%2Ecom%2Faishakothare31%2FMicrosoftSentinel%2DShodanMonitor%2Fmaster%2Fazure%2Ddeploy%2Ejson)
 
-[![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)]
+[![Deploy to Azure Gov](https://aka.ms/deploytoazuregovbutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw%2Egithubusercontent%2Ecom%2Faishakothare31%2FMicrosoftSentinel%2DShodanMonitor%2Fmaster%2Fazure%2Ddeploy%2Ejson)
 
 The template deploys the following:
 
