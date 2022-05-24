@@ -1,0 +1,270 @@
+{
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "workbookDisplayName": {
+        "type": "string",
+        "defaultValue": "Shodan Monitor workbook",
+        "metadata": {
+          "description": "The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
+        }
+      },
+      "workbookType": {
+        "type": "string",
+        "defaultValue": "sentinel",
+        "metadata": {
+          "description": "The gallery that the workbook will been shown under. Supported values include workbook, tsg, etc. Usually, this is 'workbook'"
+        }
+      },
+      "workbookId": {
+        "type": "string",
+        "defaultValue": "[newGuid()]",
+        "metadata": {
+          "description": "The unique guid for this workbook instance"
+        }
+      }
+    },
+    "variables": {
+      "workbookContent": {
+        "version": "Notebook/1.0",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "// Counts by table names\nlet today = ShodanMonitor_CL \n| where TimeGenerated > startofday(now(),-2)\n| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d\n| summarize today_port_list=make_list_with_nulls(port_d) by ip_str_s,location_city_s, location_latitude_d, location_longitude_d, location_country_code_s;\nlet yesterday = ShodanMonitor_CL \n| where TimeGenerated > startofday(now(),-3) and TimeGenerated < startofday(now(),-2)\n| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d\n| summarize yesterday_port_list=make_list_with_nulls(port_d) by ip_str_s,location_city_s, location_longitude_d, location_latitude_d, location_country_code_s;\ntoday\n| join kind=inner yesterday on ip_str_s\n| extend new_discovered=set_difference(today_port_list,yesterday_port_list)\n| where array_length(parse_json(new_discovered))>0 \n| project ip_str_s, today_port_list, yesterday_port_list, new_discovered, location_city_s, location_longitude_d, location_latitude_d, location_country_code_s\n| summarize count() by location_longitude_d, location_latitude_d, location_city_s",
+              "size": 0,
+              "title": "Discovered assets based on location",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "map",
+              "tileSettings": {
+                "showBorder": false
+              },
+              "graphSettings": {
+                "type": 0
+              },
+              "mapSettings": {
+                "locInfo": "LatLong",
+                "locInfoColumn": "location_country_code_s",
+                "latitude": "location_latitude_d",
+                "longitude": "location_longitude_d",
+                "sizeSettings": "location_city_s",
+                "sizeAggregation": "Count",
+                "labelSettings": "location_city_s",
+                "legendMetric": "count_",
+                "legendAggregation": "Sum",
+                "itemColorSettings": {
+                  "nodeColorField": "location_latitude_d",
+                  "colorAggregation": "Count",
+                  "type": "thresholds",
+                  "thresholdsGrid": [
+                    {
+                      "operator": "==",
+                      "thresholdValue": "1",
+                      "representation": "green"
+                    },
+                    {
+                      "operator": "==",
+                      "thresholdValue": "2",
+                      "representation": "purpleDark"
+                    },
+                    {
+                      "operator": "Default",
+                      "thresholdValue": null,
+                      "representation": "orange"
+                    }
+                  ]
+                },
+                "numberFormatSettings": {
+                  "unit": 0,
+                  "options": {
+                    "style": "decimal"
+                  }
+                }
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "// Counts by table names\r\nlet today = ShodanMonitor_CL \r\n| where TimeGenerated > startofday(now(),-2)\r\n| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d\r\n| summarize today_port_list=make_list_with_nulls(port_d) by ip_str_s, location_city_s;\r\nlet yesterday = ShodanMonitor_CL \r\n| where TimeGenerated > startofday(now(),-3) and TimeGenerated < startofday(now(),-2)\r\n| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d\r\n| summarize yesterday_port_list=make_list_with_nulls(port_d) by ip_str_s, location_city_s;\r\ntoday\r\n| join kind=inner yesterday on ip_str_s\r\n| extend new_discovered=set_difference(today_port_list,yesterday_port_list)\r\n| where array_length(parse_json(new_discovered))>0 \r\n| project ip_str_s, today_port_list, yesterday_port_list, new_discovered, location_city_s\r\n| summarize count() by tostring(today_port_list), tostring(yesterday_port_list), tostring(new_discovered), ip_str_s",
+              "size": 0,
+              "title": "Port numbers newly discovered",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "ip_str_s",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  }
+                },
+                "rightContent": {
+                  "columnMatch": "new_discovered",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  }
+                },
+                "showBorder": true,
+                "size": "auto"
+              },
+              "chartSettings": {
+                "xAxis": "ip_str_s",
+                "group": "new_discovered",
+                "createOtherGroup": null,
+                "showLegend": true,
+                "seriesLabelSettings": [
+                  {
+                    "seriesName": "[[80.0]",
+                    "color": "lightBlue"
+                  },
+                  {
+                    "seriesName": "[[443.0]",
+                    "color": "turquoise"
+                  },
+                  {
+                    "color": "grayBlue"
+                  }
+                ]
+              },
+              "mapSettings": {
+                "locInfo": "LatLong"
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "ShodanMonitor_CL \r\n| where TimeGenerated > startofday(now(),-2)\r\n| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d\r\n| summarize count() by port_d\r\n| sort by count_",
+              "size": 0,
+              "title": "Count by exposed port number",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "table",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "port_d",
+                    "formatter": 1
+                  },
+                  {
+                    "columnMatch": "count_",
+                    "formatter": 8,
+                    "formatOptions": {
+                      "palette": "orange"
+                    }
+                  }
+                ],
+                "sortBy": [
+                  {
+                    "itemKey": "$gen_heatmap_count__1",
+                    "sortOrder": 2
+                  }
+                ],
+                "labelSettings": [
+                  {
+                    "columnId": "port_d",
+                    "label": "Port Number"
+                  },
+                  {
+                    "columnId": "count_",
+                    "label": "Count"
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "$gen_heatmap_count__1",
+                  "sortOrder": 2
+                }
+              ],
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "port_d",
+                  "formatter": 1,
+                  "numberFormat": {
+                    "unit": 0,
+                    "options": {
+                      "style": "decimal"
+                    }
+                  }
+                },
+                "rightContent": {
+                  "columnMatch": "count_",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                "showBorder": false,
+                "size": "auto"
+              },
+              "graphSettings": {
+                "type": 0,
+                "topContent": {},
+                "leftContent": {
+                  "columnMatch": "port_d"
+                },
+                "centerContent": {
+                  "columnMatch": "count_"
+                },
+                "nodeIdField": "port_d",
+                "sourceIdField": "port_d",
+                "targetIdField": "count_",
+                "graphOrientation": 3,
+                "showOrientationToggles": false,
+                "nodeSize": null,
+                "staticNodeSize": 100,
+                "colorSettings": null,
+                "hivesMargin": 5
+              },
+              "chartSettings": {
+                "xAxis": "count_"
+              }
+            },
+            "customWidth": "33",
+            "name": "query - 2"
+          }
+        ],
+        "isLocked": false,
+        "fromTemplateId": "sentinel-UserWorkbook"
+      }
+    },
+    "resources": [
+      {
+        "name": "[parameters('workbookId')]",
+        "type": "microsoft.insights/workbooks",
+        "location": "[resourceGroup().location]",
+        "apiVersion": "2021-03-08",
+        "dependsOn": [],
+        "kind": "shared",
+        "properties": {
+          "displayName": "[parameters('workbookDisplayName')]",
+          "serializedData": "[string(variables('workbookContent'))]",
+          "version": "1.0",
+          "sourceId": "[parameters('workbookSourceId')]",
+          "category": "[parameters('workbookType')]"
+        }
+      }
+    ],
+    "outputs": {
+      "workbookId": {
+        "type": "string",
+        "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbookId'))]"
+      }
+    },
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+  }

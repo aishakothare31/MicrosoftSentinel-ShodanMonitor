@@ -1,0 +1,13 @@
+let today = ShodanMonitor_CL
+| where TimeGenerated > startofday(now())
+| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d
+| summarize today_port_list=make_list_with_nulls(port_d) by ip_str_s;
+let yesterday = trial_CL
+| where TimeGenerated > startofday(now(), -1) and TimeGenerated < startofday(now())
+| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d
+| summarize yesterday_port_list=make_list_with_nulls(port_d) by ip_str_s;
+today
+| join kind=inner yesterday on ip_str_s
+| extend new_discovered=set_difference(today_port_list,yesterday_port_list)
+| where array_length(parse_json(new_discovered))>0
+| project ip_str_s, today_port_list, yesterday_port_list, new_discovered
