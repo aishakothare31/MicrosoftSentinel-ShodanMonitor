@@ -240,7 +240,7 @@
                 "shodan_key": "[format('@Microsoft.KeyVault(SecretUri={0})', reference(resourceId('Microsoft.KeyVault/vaults/secrets', split(format('{0}/shodanApiToken', variables('keyVaultName')), '/')[0], split(format('{0}/shodanApiToken', variables('keyVaultName')), '/')[1])).secretUri)]",
                 "customer_id": "[parameters('logAnalyticsWorkspaceID')]",
                 "shared_key": "[format('@Microsoft.KeyVault(SecretUri={0})', reference(resourceId('Microsoft.KeyVault/vaults/secrets', split(format('{0}/workspaceKey', variables('keyVaultName')), '/')[0], split(format('{0}/workspaceKey', variables('keyVaultName')), '/')[1])).secretUri)]",
-                "WEBSITE_RUN_FROM_PACKAGE": ""
+                "WEBSITE_RUN_FROM_PACKAGE": "https://github.com/aishakothare31/MicrosoftSentinel-ShodanMonitor/raw/master/AzureSentinel-ShodanMonitor.zip"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
