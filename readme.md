@@ -42,3 +42,19 @@ The template deploys the following:
 * Creates and configures an Azure Function app, including App Insights
 * Creates a storage account
 * Creates a key vault to store secrets
+
+## KQL Query for Sentinel Logs
+~~~
+let today = trial_CL 
+| where TimeGenerated > startofday(now())
+| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d
+| summarize today_port_list=make_list(port_d) by ip_str_s;
+let yesterday = trial_CL 
+| where TimeGenerated > startofday(now(),-1) and TimeGenerated < startofday(now())
+| summarize arg_max(TimeGenerated, *) by ip_str_s, port_d
+| summarize yesterday_port_list=make_list(port_d) by ip_str_s;
+today
+| join kind=inner yesterday on ip_str_s
+| extend new_discovered=set_difference(today_port_list,yesterday_port_list)
+| project ip_str_s, today_port_list, yesterday_port_list, new_discovered
+~~~
